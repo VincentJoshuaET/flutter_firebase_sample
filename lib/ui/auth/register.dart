@@ -119,6 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: Colors.transparent,
             centerTitle: true,
             elevation: 0.0,
