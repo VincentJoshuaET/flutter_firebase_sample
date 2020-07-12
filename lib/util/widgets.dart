@@ -32,7 +32,7 @@ class PasswordForm extends StatelessWidget {
             border: OutlineInputBorder(), labelText: 'Password'),
         obscureText: true,
         validator: (value) =>
-        value.isPassword() ? null : 'Please enter valid password');
+            value.isPassword() ? 'Please enter valid password' : null);
   }
 }
 

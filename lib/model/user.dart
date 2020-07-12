@@ -6,6 +6,7 @@ class User {
   String firstName;
   String middleName;
   String lastName;
+  String username;
   String mobile;
   String location;
   String gender;
@@ -17,6 +18,7 @@ class User {
       @required this.firstName,
       @required this.middleName,
       @required this.lastName,
+      @required this.username,
       @required this.mobile,
       @required this.location,
       @required this.gender,
@@ -28,6 +30,7 @@ class User {
         firstName = snapshot['firstName'] as String ?? '',
         middleName = snapshot['middleName'] as String ?? '',
         lastName = snapshot['lastName'] as String ?? '',
+        username = snapshot['username'] as String ?? '',
         mobile = snapshot['mobile'] as String ?? '',
         location = snapshot['location'] as String ?? '',
         gender = snapshot['gender'] as String ?? '',
@@ -40,6 +43,7 @@ class User {
       'firstName': firstName,
       'middleName': middleName,
       'lastName': lastName,
+      'username': username,
       'mobile': mobile,
       'location': location,
       'gender': gender,

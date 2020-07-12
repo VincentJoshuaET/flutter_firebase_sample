@@ -23,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _middleName = TextEditingController();
   final TextEditingController _lastName = TextEditingController();
   final TextEditingController _email = TextEditingController();
+  final TextEditingController _username = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _mobile = TextEditingController();
   final TextEditingController _location = TextEditingController();
@@ -79,6 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         firstName: _firstName.text,
         middleName: _middleName.text,
         lastName: _lastName.text,
+        username: _username.text,
         mobile: _mobile.text,
         location: _location.text,
         gender: _gender.text,
@@ -96,18 +98,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _createUser() async {
-    if (_formKey.currentState.validate()) {
-      final dynamic result =
-          await _auth.createUser(_email.text, _password.text);
+    final dynamic result = await _auth.createUser(_email.text, _password.text);
 
-      if (result is AuthResult) {
-        _setUserData(result.user);
+    if (result is AuthResult) {
+      _setUserData(result.user);
+    } else {
+      showSnackBarAction(
+          key: _scaffoldKey,
+          text: result.message as String,
+          label: 'Retry',
+          onPressed: () async => _createUser());
+    }
+  }
+
+  Future<void> _checkUsername() async {
+    if (_formKey.currentState.validate()) {
+      final dynamic result = await _firestore.checkUsername(_username.text);
+
+      if (result is QuerySnapshot) {
+        if (result.documents.isEmpty) {
+          _createUser();
+        } else {
+          showSnackBar(key: _scaffoldKey, text: 'Username already exists!');
+        }
       } else {
         showSnackBarAction(
             key: _scaffoldKey,
             text: result.message as String,
             label: 'Retry',
-            onPressed: () async => _createUser());
+            onPressed: () async => _checkUsername());
       }
     } else {
       setState(() => _autoValidate = true);
@@ -135,22 +154,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(children: [
                       const SizedBox(height: 8.0),
                       InputForm(
-                        controller: _firstName,
-                        error: 'Please enter first name',
-                        label: 'First Name',
-                      ),
+                          controller: _firstName,
+                          error: 'Please enter first name',
+                          label: 'First Name'),
                       const SizedBox(height: 24.0),
                       InputForm(
-                        controller: _middleName,
-                        error: 'Please enter middle name',
-                        label: 'Middle Name',
-                      ),
+                          controller: _middleName,
+                          error: 'Please enter middle name',
+                          label: 'Middle Name'),
                       const SizedBox(height: 24.0),
                       InputForm(
-                        controller: _lastName,
-                        error: 'Please enter last name',
-                        label: 'Last Name',
-                      ),
+                          controller: _lastName,
+                          error: 'Please enter last name',
+                          label: 'Last Name'),
+                      const SizedBox(height: 24.0),
+                      InputForm(
+                          controller: _username,
+                          error: 'Please enter username',
+                          label: 'Username',
+                          validator: (value) => value.length < 8
+                              ? 'Please enter valid username'
+                              : null),
                       const SizedBox(height: 24.0),
                       EmailForm(controller: _email),
                       const SizedBox(height: 24.0),
@@ -177,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onTap: () => _selectDate(context)),
                       const SizedBox(height: 24.0),
                       PrimaryButton(
-                          onPressed: () async => _createUser(),
+                          onPressed: () async => _checkUsername(),
                           text: 'Register'),
                       SecondaryButton(
                           onPressed: () => Navigator.pop(context),
