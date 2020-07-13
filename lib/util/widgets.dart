@@ -85,7 +85,7 @@ class MobileForm extends StatelessWidget {
             border: OutlineInputBorder(), labelText: 'Mobile Number'),
         onChanged: (value) => controller.text = value.toMobileFormat(),
         validator: (value) =>
-        value.isMobileFormat() ? null : 'Please enter valid mobile number');
+            value.isMobileFormat() ? null : 'Please enter valid mobile number');
   }
 }
 
