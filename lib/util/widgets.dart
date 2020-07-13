@@ -109,10 +109,11 @@ class DateForm extends StatelessWidget {
 }
 
 class DropdownForm extends StatelessWidget {
-  const DropdownForm({@required this.controller,
-    @required this.error,
-    @required this.items,
-    @required this.label});
+  const DropdownForm(
+      {@required this.controller,
+      @required this.error,
+      @required this.items,
+      @required this.label});
 
   final TextEditingController controller;
   final String error, label;
