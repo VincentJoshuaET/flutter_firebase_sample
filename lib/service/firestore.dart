@@ -2,11 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_firebase_sample/model/user.dart';
 
 class FirestoreService {
-  static final FirestoreService _instance = FirestoreService._constructor();
+  static final _instance = FirestoreService._constructor();
 
-  factory FirestoreService() {
-    return _instance;
-  }
+  factory FirestoreService() => _instance;
 
   FirestoreService._constructor();
 

@@ -1,15 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
-  static final AuthService _instance = AuthService._constructor();
+  static final _instance = AuthService._constructor();
 
-  factory AuthService() {
-    return _instance;
-  }
+  factory AuthService() => _instance;
 
   AuthService._constructor();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _auth = FirebaseAuth.instance;
 
   Future currentUser() async {
     try {
@@ -21,7 +19,8 @@ class AuthService {
 
   Future signIn(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
     } catch (error) {
       return error;
     }
@@ -37,7 +36,8 @@ class AuthService {
 
   Future createUser(String email, String password) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      return await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
     } catch (error) {
       return error;
     }

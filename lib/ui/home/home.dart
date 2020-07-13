@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_firebase_sample/service/auth.dart';
 import 'package:flutter_firebase_sample/util/widgets.dart';
 
@@ -15,12 +16,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final dynamic result = await _auth.signOut();
     if (result == null) {
       Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      showSnackBarAction(
-          key: _scaffoldKey,
-          text: result.message as String,
+    } else if (result is PlatformException) {
+      _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
           label: 'Retry',
-          onPressed: () => _signOut());
+          onPressed: () async => _signOut(),
+          text: result.message));
     }
   }
 

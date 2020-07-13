@@ -32,7 +32,7 @@ class PasswordForm extends StatelessWidget {
             border: OutlineInputBorder(), labelText: 'Password'),
         obscureText: true,
         validator: (value) =>
-            value.isPassword() ? 'Please enter valid password' : null);
+            value.isPassword() ? null : 'Please enter valid password');
   }
 }
 
@@ -54,8 +54,8 @@ class ConfirmPasswordForm extends StatelessWidget {
 
 class InputForm extends StatelessWidget {
   const InputForm({@required this.controller,
-    this.error,
     @required this.label,
+    this.error,
     this.validator});
 
   final TextEditingController controller;
@@ -68,7 +68,7 @@ class InputForm extends StatelessWidget {
         controller: controller,
         decoration: InputDecoration(
             border: const OutlineInputBorder(), labelText: label),
-        validator: validator ?? (value) => value.isEmpty ? error : null);
+        validator: validator ?? ((value) => value.isEmpty ? error : null));
   }
 }
 
@@ -98,7 +98,8 @@ class DateForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
         controller: controller,
-        decoration: outlineInput('Date Of Birth'),
+        decoration: const InputDecoration(
+            border: OutlineInputBorder(), labelText: 'Date Of Birth'),
         onTap: onTap,
         readOnly: true,
         validator: (value) =>
@@ -119,13 +120,14 @@ class DropdownForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField(
-        decoration: outlineInput(label),
+        decoration: InputDecoration(
+            border: const OutlineInputBorder(), labelText: label),
         items: items
             .map((value) => DropdownMenuItem(value: value, child: Text(value)))
             .toList(),
         onChanged: (String value) => controller.text = value,
         onTap: () => FocusManager.instance.primaryFocus.unfocus(),
-        validator: (String value) => value == null ? error : null);
+        validator: (value) => value == null ? error : null);
   }
 }
 
@@ -163,33 +165,16 @@ class SecondaryButton extends StatelessWidget {
   }
 }
 
-void showSnackBar(
-    {@required GlobalKey<ScaffoldState> key, @required String text}) {
-  key.currentState.showSnackBar(SnackBar(content: Text(text)));
-}
+class ActionSnackBar extends SnackBar {
+  const ActionSnackBar(
+      {@required this.label, @required this.onPressed, @required this.text});
 
-void showSnackBarAction({@required GlobalKey<ScaffoldState> key,
-  @required String text,
-  @required String label,
-  @required Function() onPressed}) {
-  key.currentState.showSnackBar(SnackBar(
-      action: onPressed != null
-          ? SnackBarAction(label: label, onPressed: onPressed)
-          : null,
-      content: Text(text)));
-}
+  final String label, text;
+  final Function() onPressed;
 
-void showAlertDialog({@required BuildContext context,
-  @required List<Widget> actions,
-  @required String content,
-  @required String title}) {
-  showDialog(
-      context: context,
-      builder: (context) =>
-          AlertDialog(
-              actions: actions, content: Text(content), title: Text(title)));
-}
-
-InputDecoration outlineInput(String label) {
-  return InputDecoration(border: const OutlineInputBorder(), labelText: label);
+  Widget build(BuildContext context) {
+    return SnackBar(
+        action: SnackBarAction(label: label, onPressed: onPressed),
+        content: Text(text));
+  }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_firebase_sample/service/auth.dart';
 import 'package:flutter_firebase_sample/util/widgets.dart';
 
@@ -8,25 +10,24 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final AuthService _auth = AuthService();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final TextEditingController _email = TextEditingController();
+  final _auth = AuthService();
+  final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _email = TextEditingController();
 
-  bool _autoValidate = false;
+  var _autoValidate = false;
 
   Future<void> _resetPassword() async {
     if (_formKey.currentState.validate()) {
       final dynamic result = await _auth.resetPassword(_email.text);
 
-      if (result != null) {
-        return Navigator.pop(context, 'Password reset email sent!');
-      } else {
-        showSnackBarAction(
-            key: _scaffoldKey,
-            text: result.message as String,
-            label: 'Retry',
-            onPressed: () async => _resetPassword());
+      if (result == null) {
+        Navigator.pop(context, 'Password reset email sent!');
+      } else if (result is PlatformException) {
+        _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+            label: result.message,
+            onPressed: () async => _resetPassword(),
+            text: 'Retry'));
       }
     } else {
       setState(() => _autoValidate = true);

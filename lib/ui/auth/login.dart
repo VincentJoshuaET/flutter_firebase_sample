@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_firebase_sample/service/auth.dart';
 import 'package:flutter_firebase_sample/util/widgets.dart';
 
@@ -9,24 +10,23 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final AuthService _auth = AuthService();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
+  final _auth = AuthService();
+  final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
 
-  bool _autoValidate = false;
+  var _autoValidate = false;
 
   Future<void> _signOut() async {
     final dynamic result = await _auth.signOut();
     if (result == null) {
       Navigator.pop(context);
-    } else {
-      showSnackBarAction(
-          key: _scaffoldKey,
-          text: result.message as String,
-          label: 'Try Again',
-          onPressed: () async => _signOut());
+    } else if (result is PlatformException) {
+      _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+          label: result.message,
+          onPressed: () async => _signOut(),
+          text: 'Retry'));
     }
   }
 
@@ -34,12 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final dynamic result = await _auth.verifyEmail(user);
     if (result == null) {
       _signOut();
-    } else {
-      showSnackBarAction(
-          key: _scaffoldKey,
-          text: result.message as String,
-          label: 'Resend',
-          onPressed: () async => _verifyEmail(user));
+    } else if (result is PlatformException) {
+      _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+          label: result.message,
+          onPressed: () async => _verifyEmail(user),
+          text: 'Resend'));
     }
   }
 
@@ -49,25 +48,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result is AuthResult) {
         if (result.user.isEmailVerified) {
-          await Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/home');
         } else {
-          showAlertDialog(
+          showDialog(
               context: context,
-              actions: [
-                SecondaryButton(
-                    onPressed: () async => _verifyEmail(result.user),
-                    text: 'Yes'),
-                SecondaryButton(onPressed: () async => _signOut(), text: 'No')
-              ],
-              content: 'Email address is not verified. Resend email?',
-              title: 'Email Not Verified');
+              builder: (context) => AlertDialog(
+                      actions: [
+                        SecondaryButton(
+                            onPressed: () async => _verifyEmail(result.user),
+                            text: 'Yes'),
+                        SecondaryButton(
+                            onPressed: () async => _signOut(), text: 'No')
+                      ],
+                      content: const Text(
+                          'Email address is not verified. Resend email?'),
+                      title: const Text('Email Not Verified')));
         }
-      } else {
-        showSnackBarAction(
-            key: _scaffoldKey,
-            text: result.message as String,
-            label: 'Retry',
-            onPressed: () async => _signIn());
+      } else if (result is PlatformException) {
+        _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+            label: result.message,
+            onPressed: () async => _signIn(),
+            text: 'Retry'));
       }
     } else {
       setState(() => _autoValidate = true);
@@ -76,12 +77,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _forgotPassword() async {
     final result = await Navigator.pushNamed(context, '/forgotPassword');
-    if (result != null) showSnackBar(key: _scaffoldKey, text: result as String);
+    if (result is String) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(result)));
+    }
   }
 
   Future<void> _register() async {
     final result = await Navigator.pushNamed(context, '/register');
-    if (result != null) showSnackBar(key: _scaffoldKey, text: result as String);
+    if (result is String) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(result)));
+    }
   }
 
   @override
@@ -114,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     text: 'Log In',
                                     onPressed: () async => _signIn()),
                                 SecondaryButton(
-                                    onPressed: () => _forgotPassword(),
+                                    onPressed: () async => _forgotPassword(),
                                     text: 'Forgot Password')
                               ]))),
                   SecondaryButton(

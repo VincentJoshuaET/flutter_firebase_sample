@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_firebase_sample/model/user.dart';
 import 'package:flutter_firebase_sample/service/auth.dart';
 import 'package:flutter_firebase_sample/service/firestore.dart';
@@ -14,29 +15,29 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final AuthService _auth = AuthService();
-  final FirestoreService _firestore = FirestoreService();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _auth = AuthService();
+  final _firestore = FirestoreService();
+  final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final TextEditingController _firstName = TextEditingController();
-  final TextEditingController _middleName = TextEditingController();
-  final TextEditingController _lastName = TextEditingController();
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _username = TextEditingController();
-  final TextEditingController _password = TextEditingController();
-  final TextEditingController _mobile = TextEditingController();
-  final TextEditingController _location = TextEditingController();
-  final TextEditingController _gender = TextEditingController();
-  final TextEditingController _dateOfBirth = TextEditingController();
+  final _firstName = TextEditingController();
+  final _middleName = TextEditingController();
+  final _lastName = TextEditingController();
+  final _email = TextEditingController();
+  final _username = TextEditingController();
+  final _password = TextEditingController();
+  final _mobile = TextEditingController();
+  final _location = TextEditingController();
+  final _gender = TextEditingController();
+  final _dateOfBirth = TextEditingController();
 
-  bool _autoValidate = false;
+  var _autoValidate = false;
 
-  final DateFormat _dateFormat = DateFormat('MMMM d, yyyy');
-  final DateTime _maxDate = DateTime.now().subtractYears(18);
-  DateTime _birthDate = DateTime.now().subtractYears(18);
+  final _dateFormat = DateFormat('MMMM d, yyyy');
+  final _maxDate = DateTime.now().subtractYears(18);
+  var _birthDate = DateTime.now().subtractYears(18);
 
-  Future _selectDate(BuildContext context) async {
+  Future<void> _selectDate() async {
     final _selectedDate = await showDatePicker(
         context: context,
         initialDate: _birthDate,
@@ -52,12 +53,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final dynamic result = await _auth.signOut();
     if (result == null) {
       Navigator.pop(context, 'Verification email sent!');
-    } else {
-      showSnackBarAction(
-          key: _scaffoldKey,
-          text: result.message as String,
-          label: 'Try Again',
-          onPressed: () async => _signOut());
+    } else if (result is PlatformException) {
+      _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+          label: result.message,
+          onPressed: () async => _signOut(),
+          text: 'Retry'));
     }
   }
 
@@ -65,12 +65,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final dynamic result = await _auth.verifyEmail(firebaseUser);
     if (result == null) {
       _signOut();
-    } else {
-      showSnackBarAction(
-          key: _scaffoldKey,
-          text: result.message as String,
-          label: 'Resend',
-          onPressed: () async => _verifyEmail(firebaseUser));
+    } else if (result is PlatformException) {
+      _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+          label: result.message,
+          onPressed: () async => _verifyEmail(firebaseUser),
+          text: 'Resend'));
     }
   }
 
@@ -88,12 +87,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final dynamic result = await _firestore.setUserData(user);
     if (result == null) {
       _verifyEmail(firebaseUser);
-    } else {
-      showSnackBarAction(
-          key: _scaffoldKey,
-          text: result.message as String,
-          label: 'Retry',
-          onPressed: () async => _setUserData(firebaseUser));
+    } else if (result is PlatformException) {
+      _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+          label: result.message,
+          onPressed: () async => _setUserData(firebaseUser),
+          text: 'Retry'));
     }
   }
 
@@ -102,12 +100,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (result is AuthResult) {
       _setUserData(result.user);
-    } else {
-      showSnackBarAction(
-          key: _scaffoldKey,
-          text: result.message as String,
-          label: 'Retry',
-          onPressed: () async => _createUser());
+    } else if (result is PlatformException) {
+      _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+          label: result.message,
+          onPressed: () async => _createUser(),
+          text: 'Retry'));
     }
   }
 
@@ -119,14 +116,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (result.documents.isEmpty) {
           _createUser();
         } else {
-          showSnackBar(key: _scaffoldKey, text: 'Username already exists!');
+          _scaffoldKey.currentState.showSnackBar(
+              const SnackBar(content: Text('Username already exists!')));
         }
-      } else {
-        showSnackBarAction(
-            key: _scaffoldKey,
-            text: result.message as String,
-            label: 'Retry',
-            onPressed: () async => _checkUsername());
+      } else if (result is PlatformException) {
+        _scaffoldKey.currentState.showSnackBar(ActionSnackBar(
+            label: result.message,
+            onPressed: () async => _checkUsername(),
+            text: 'Retry'));
       }
     } else {
       setState(() => _autoValidate = true);
@@ -170,7 +167,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 24.0),
                       InputForm(
                           controller: _username,
-                          error: 'Please enter username',
                           label: 'Username',
                           validator: (value) => value.length < 8
                               ? 'Please enter valid username'
@@ -197,8 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           label: 'Gender'),
                       const SizedBox(height: 24.0),
                       DateForm(
-                          controller: _dateOfBirth,
-                          onTap: () => _selectDate(context)),
+                          controller: _dateOfBirth, onTap: () => _selectDate()),
                       const SizedBox(height: 24.0),
                       PrimaryButton(
                           onPressed: () async => _checkUsername(),

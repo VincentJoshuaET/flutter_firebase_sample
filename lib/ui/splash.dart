@@ -10,18 +10,24 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-Future _currentUser() async {
-  final _auth = AuthService();
-  final dynamic user = await _auth.currentUser();
-  return user;
-}
-
 class _SplashScreenState extends State<SplashScreen> {
+  final _auth = AuthService();
+
+  Future _currentUser() async {
+    final dynamic user = await _auth.currentUser();
+    return user;
+  }
+
   @override
   Widget build(BuildContext context) {
     final dynamic user = _currentUser();
-    if (user is FirebaseUser && user.isEmailVerified) {
-      return HomeScreen();
+    if (user is FirebaseUser) {
+      if (user.isEmailVerified) {
+        return HomeScreen();
+      } else {
+        _auth.signOut();
+        return LoginScreen();
+      }
     } else {
       return LoginScreen();
     }
