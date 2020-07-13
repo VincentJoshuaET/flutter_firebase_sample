@@ -48,7 +48,7 @@ class ConfirmPasswordForm extends StatelessWidget {
             border: OutlineInputBorder(), labelText: 'Confirm Password'),
         obscureText: true,
         validator: (value) =>
-        controller.text != value ? 'Passwords do not match' : null);
+            controller.text != value ? 'Passwords do not match' : null);
   }
 }
 
