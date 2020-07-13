@@ -104,7 +104,7 @@ class DateForm extends StatelessWidget {
         onTap: onTap,
         readOnly: true,
         validator: (value) =>
-        value.isEmpty ? 'Please enter date of birth' : null);
+            value.isEmpty ? 'Please enter date of birth' : null);
   }
 }
 
