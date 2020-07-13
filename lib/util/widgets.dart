@@ -53,10 +53,11 @@ class ConfirmPasswordForm extends StatelessWidget {
 }
 
 class InputForm extends StatelessWidget {
-  const InputForm({@required this.controller,
-    @required this.label,
-    this.error,
-    this.validator});
+  const InputForm(
+      {@required this.controller,
+      @required this.label,
+      this.error,
+      this.validator});
 
   final TextEditingController controller;
   final String label, error;
